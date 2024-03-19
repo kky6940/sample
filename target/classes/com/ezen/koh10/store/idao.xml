@@ -1,0 +1,54 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ezen.koh10.store.Service">
+  <insert id="insert">
+  	insert into store0312(snum,place,carname,su,price,groups) values(snum0312_seq.nextval,#{param1},#{param2},#{param3},#{param4},snum0312_seq.currval)
+  </insert>
+  <!-- 페이징처리에서 전체레코드수 구하기 -->
+	<select id="total" resultType="int">
+	   select count(*) from store0312
+	</select>
+	<!-- 페이징처리에서 전체레코드수 구하기 -->
+	<!-- 페이지 출력 구하기 -->	
+	<select id="page" resultType="com.ezen.koh10.store.StoreDTO">
+	   select * from ( <!-- 세번째 쿼리, 모든 것을 화면에 표시 -->
+	   select rownum rn,A.* from(  <!-- 두번째 실행, 행번호 검색 후 A의 모든 것을 넣음 -->
+	   select snum,place,carname,su,price,groups,step,indent,su*price as totprice from store0312 order by groups DESC,step asc)A) <!-- 서브쿼리 첫번째로 실행됨, 결과를 A로 넣음 -->
+	   where rn between #{start} AND #{end} <!-- 행번호와 스타트페이지, 끝 페이지를 조건으로 넣음 -->
+	</select>
+	<!-- 페이지 출력 구하기 -->
+	
+	<select id="placesell" resultType="com.ezen.koh10.store.StoreDTO">
+	   select * from ( 
+	   select rownum rn,A.* from(  
+	   select place, sum(su*price)as totprice from store0312 
+	   group by place )A) 
+	   where rn between #{start} AND #{end} 
+	</select>
+	
+	<select id="carsell" resultType="com.ezen.koh10.store.StoreDTO">
+	   select * from ( 
+	   select rownum rn,A.* from(  
+	   select carname, sum(su*price)as totprice from store0312 
+	   group by carname having carname=#{carname})A) 
+	   where rn between #{start} AND #{end} 
+	</select>
+	
+	<select id="maxsell" resultType="com.ezen.koh10.store.StoreDTO">
+	select * from (
+	select rownum rn,A.* from( 
+	 select snum,place,carname,(su*price) as totprice from store0312 
+	 where (su*price)=(select max(su*price) from store0312))A)
+	 where rn between #{start} AND #{end}
+	</select>
+	
+	<select id="storepageasc" resultType="com.ezen.koh10.store.StoreDTO">
+	   select * from ( <!-- 세번째 쿼리, 모든 것을 화면에 표시 -->
+	   select rownum rn,A.* from(  <!-- 두번째 실행, 행번호 검색 후 A의 모든 것을 넣음 -->
+	   select snum,place,carname,su,price,groups,step,indent,su*price as totprice from store0312 order by totprice desc )A) <!-- 서브쿼리 첫번째로 실행됨, 결과를 A로 넣음 -->
+	   where rn between #{start} AND #{end} <!-- 행번호와 스타트페이지, 끝 페이지를 조건으로 넣음 -->
+	</select>
+	
+</mapper>
